@@ -325,7 +325,35 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
                 export default ArticleItem
             ```
-- Creating nested routes (http://localhost:3000/article/4)
+- Creating nested routes example -> http://localhost:3000/article/4
+
+    - To create nexted routes, we need a specific folder structure
+
+    ```
+        .
+        +-- 📦 next-crash-course
+            |+-- 📂 pages
+                |+-- 📂 article
+                    |+-- 📂 [id]
+                        |+-- 📜 index.js
+    ```
+
+    - index.js is going to be our single article page
+
+        ```javascript
+            import { useRouter } from 'next/router'
+
+            export default function article() {
+                const router = useRouter();
+                const { id } = router.query;
+
+                return (
+                    <div>
+                        This is the article: { id }      
+                    </div>
+                );
+            }
+        ```
 
 ## Deploy on Vercel
 
