@@ -120,7 +120,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
         export default MyApp
     ```
 
-    - Since the Layout component does NOT need a different URL, we will create it on a components folder
+    - Since the Layout component does NOT need a different URL, we will add it to a components folder that we will manually create
 
     ```javascript
         import Nav from './Nav'
@@ -259,7 +259,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
         3. <span style="color: #FF1493">getServerSideProps</span> (Server-side Rendering): Fetch data on each request.
 
-    - As an example, we are going to use `getStaticProps` on our `index.js` page to get a list of articles from an API. As you can see, we get the list of articles using the fetch API and when we have them we just return an object with the key `props` and value the `articles`. This prop (articles) will be able to be used on our component as a prop!
+    - As an example, we are going to use <span style="color: #FF1493">getStaticProps</span> on our `index.js` page to get a list of articles from an API. As you can see, we get the list of articles using the fetch API and when we have them we just return an object with the key `props` and value the `articles`. This prop (articles) will be able to be used on our component as a prop!
 
         - index.js
 
@@ -338,7 +338,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
                         |+-- 📜 index.js
     ```
 
-    - index.js is going to be our single article page
+    - index.js is going to be our single article page where we can access to our url params by using `useRouter`
 
         ```javascript
             import { useRouter } from 'next/router'
@@ -353,6 +353,100 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
                     </div>
                 );
             }
+        ```
+    
+    - We are going to see another way, by using the data fetching methods Next.js provide to pages such as <span style="color: #FF1493">getServerSideProps</span>. With this, we fetch the data when we go to the page.
+
+    - Note, that in oder to get the params, we use now a context inside the function that allow us to access to `context.params.id`
+
+        ```javascript
+            import Link from 'next/Link'
+
+            export const getServerSideProps = async (context) => {
+                const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${context.params.id}`)
+                const article = await res.json()
+
+                return {
+                    props: {
+                        article
+                    }
+                }
+            }
+
+            export default function article({ article }) {
+
+                return (
+                    <div>
+                        <h1>{article.title}</h1>
+                        <p>{article.body}</p>
+                        <br />
+                        <Link href="/">Go back</Link>
+                    </div>
+                );
+            }
+        ```
+    
+    - We could improve this even more by using a combination of <span style="color: #FF1493">getStaticProps</span> and <span style="color: #FF1493">getStaticPaths</span> to dynamically generate the path with the data
+
+        ```javascript
+            import Link from 'next/Link'
+
+            export const getStaticProps = async (context) => {
+                const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${context.params.id}`)
+                const article = await res.json()
+
+                return {
+                    props: {
+                        article
+                    }
+                }
+            }
+
+            export const getStaticPaths = async () => {
+                const res = await fetch(`https://jsonplaceholder.typicode.com/posts`)
+                const articles = await res.json()
+
+                const ids = articles.map(article => article.id)
+                
+                const paths = ids.map(id => ({params: {id: id.toString()}}))
+
+                return {
+                    paths,
+                    fallback: false
+                }
+            }
+
+            export default function article({ article }) {
+
+                return (
+                    <div>
+                        <h1>{article.title}</h1>
+                        <p>{article.body}</p>
+                        <br />
+                        <Link href="/">Go back</Link>
+                    </div>
+                );
+            }
+        ```
+    - Note, params object has the following structure:
+
+        ```
+        [
+            { params: { id: '1' } },
+            { params: { id: '2' } },
+            { params: { id: '3' } },
+            { params: { id: '4' } },
+            { params: { id: '5' } },
+            { params: { id: '6' } },
+            { params: { id: '7' } },
+            { params: { id: '8' } },
+            { params: { id: '9' } },
+            { params: { id: '10' } },
+            { params: { id: '11' } },
+            { params: { id: '12' } },
+            ...
+            { params: { id: '100' } }
+        ]
         ```
 
 ## Deploy on Vercel
